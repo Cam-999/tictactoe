@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Tower Defense App Icon</title>
+<style>
+  body { margin: 0; background: #111; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+</style>
+</head>
+<body>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <!-- Background sky gradient -->
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#0d1f3a"/>
+      <stop offset="55%"  stop-color="#1a4060"/>
+      <stop offset="100%" stop-color="#0a1525"/>
+    </linearGradient>
+
+    <!-- Ground platform -->
+    <linearGradient id="stoneGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#4a5560"/>
+      <stop offset="100%" stop-color="#2a3040"/>
+    </linearGradient>
+
+    <!-- Tower body -->
+    <linearGradient id="towerBody" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%"   stop-color="#3a4455"/>
+      <stop offset="40%"  stop-color="#505e70"/>
+      <stop offset="100%" stop-color="#2e3a48"/>
+    </linearGradient>
+
+    <!-- Tower face shading -->
+    <linearGradient id="towerFace" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#606e80"/>
+      <stop offset="100%" stop-color="#3a4455"/>
+    </linearGradient>
+
+    <!-- Grass -->
+    <linearGradient id="grass" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#2a7a30"/>
+      <stop offset="100%" stop-color="#1a5520"/>
+    </linearGradient>
+
+    <!-- Window glow -->
+    <radialGradient id="winGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%"   stop-color="#55aaff" stop-opacity="1"/>
+      <stop offset="100%" stop-color="#0033aa" stop-opacity="0.6"/>
+    </radialGradient>
+
+    <!-- Tesla glow -->
+    <radialGradient id="teslaGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%"   stop-color="#00ffee" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#0066aa" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Tower ambient glow -->
+    <radialGradient id="towerAura" cx="50%" cy="40%" r="50%">
+      <stop offset="0%"   stop-color="#0055cc" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#0055cc" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Gold gradient -->
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#ffe066"/>
+      <stop offset="100%" stop-color="#cc8800"/>
+    </linearGradient>
+
+    <!-- Stair gradient -->
+    <linearGradient id="stairGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#e8c840"/>
+      <stop offset="100%" stop-color="#a07010"/>
+    </linearGradient>
+
+    <!-- Stone block slight highlight -->
+    <linearGradient id="blockHL" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#606878" stop-opacity="1"/>
+      <stop offset="100%" stop-color="#3a4050" stop-opacity="1"/>
+    </linearGradient>
+
+    <!-- Filter: soft glow -->
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+
+    <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="12" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+
+    <filter id="tinyGlow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+
+    <!-- Rounded icon clip -->
+    <clipPath id="iconClip">
+      <rect width="1024" height="1024" rx="224" ry="224"/>
+    </clipPath>
+  </defs>
+
+  <g clip-path="url(#iconClip)">
+
+    <!-- ── SKY ── -->
+    <rect width="1024" height="1024" fill="url(#sky)"/>
+
+    <!-- Stars -->
+    <circle cx="80"  cy="60"  r="2" fill="white" opacity="0.6"/>
+    <circle cx="200" cy="30"  r="1.5" fill="white" opacity="0.5"/>
+    <circle cx="350" cy="80"  r="2" fill="white" opacity="0.7"/>
+    <circle cx="600" cy="20"  r="1.5" fill="white" opacity="0.4"/>
+    <circle cx="750" cy="55"  r="2" fill="white" opacity="0.6"/>
+    <circle cx="920" cy="90"  r="1.5" fill="white" opacity="0.5"/>
+    <circle cx="140" cy="150" r="1.5" fill="white" opacity="0.4"/>
+    <circle cx="870" cy="140" r="2"   fill="white" opacity="0.6"/>
+    <circle cx="440" cy="40"  r="1.5" fill="white" opacity="0.5"/>
+    <circle cx="970" cy="35"  r="2"   fill="white" opacity="0.4"/>
+
+    <!-- ── MOUNTAINS (silhouette) ── -->
+    <!-- Far mountains -->
+    <polygon points="0,620 120,340 260,540 0,620"       fill="#162840" opacity="0.8"/>
+    <polygon points="80,620 280,260 480,520 80,620"     fill="#1a3050" opacity="0.7"/>
+    <polygon points="380,620 580,220 780,560 380,620"   fill="#162840" opacity="0.8"/>
+    <polygon points="650,620 840,300 1024,500 1024,620" fill="#1a3050" opacity="0.7"/>
+    <polygon points="800,620 1024,350 1024,620"         fill="#162840" opacity="0.6"/>
+
+    <!-- Subtle horizontal mist line -->
+    <rect x="0" y="590" width="1024" height="40" fill="#1a3555" opacity="0.4"/>
+
+    <!-- ── TOWER AMBIENT GLOW ── -->
+    <ellipse cx="512" cy="480" rx="320" ry="280" fill="url(#towerAura)"/>
+
+    <!-- ── FLOATING STONE ISLAND ── -->
+    <!-- Shadow under island -->
+    <ellipse cx="512" cy="870" rx="310" ry="28" fill="#000" opacity="0.35"/>
+
+    <!-- Stone base sides (3D look) -->
+    <!-- Left side face -->
+    <path d="M 215,760 L 215,840 Q 215,860 235,865 L 512,875 L 512,795 Z" fill="#252e38"/>
+    <!-- Right side face -->
+    <path d="M 809,760 L 809,840 Q 809,860 789,865 L 512,875 L 512,795 Z" fill="#1e2730"/>
+    <!-- Front stone face — draw individual blocks -->
+    <!-- Row 1 (top of stone wall) -->
+    <rect x="215" y="750" width="119" height="38" rx="3" fill="#434f5e"/>
+    <rect x="336" y="750" width="119" height="38" rx="3" fill="#3d4a58"/>
+    <rect x="457" y="750" width="119" height="38" rx="3" fill="#434f5e"/>
+    <rect x="578" y="750" width="119" height="38" rx="3" fill="#3d4a58"/>
+    <rect x="697" y="750" width="112" height="38" rx="3" fill="#434f5e"/>
+    <!-- Row 2 -->
+    <rect x="215" y="790" width="90"  height="38" rx="3" fill="#3a4755"/>
+    <rect x="307" y="790" width="120" height="38" rx="3" fill="#404d5c"/>
+    <rect x="429" y="790" width="120" height="38" rx="3" fill="#3a4755"/>
+    <rect x="551" y="790" width="120" height="38" rx="3" fill="#404d5c"/>
+    <rect x="673" y="790" width="136" height="38" rx="3" fill="#3a4755"/>
+    <!-- Stone mortar lines (horizontal) -->
+    <line x1="215" y1="788" x2="809" y2="788" stroke="#222a34" stroke-width="2"/>
+    <line x1="215" y1="828" x2="809" y2="828" stroke="#222a34" stroke-width="2"/>
+
+    <!-- ── GRASS TOP ── -->
+    <ellipse cx="512" cy="750" rx="297" ry="42" fill="url(#grass)"/>
+    <!-- Grass detail bumps -->
+    <ellipse cx="300" cy="745" rx="50" ry="12" fill="#2a8030" opacity="0.6"/>
+    <ellipse cx="440" cy="740" rx="40" ry="10" fill="#2a8030" opacity="0.5"/>
+    <ellipse cx="600" cy="742" rx="45" ry="11" fill="#2a8030" opacity="0.5"/>
+    <ellipse cx="730" cy="745" rx="50" ry="12" fill="#2a8030" opacity="0.6"/>
+
+    <!-- ── GOLDEN STAIRS ── -->
+    <rect x="477" y="710" width="70" height="14" rx="3" fill="url(#stairGrad)"/>
+    <rect x="467" y="724" width="90" height="14" rx="3" fill="url(#stairGrad)"/>
+    <rect x="457" y="738" width="110" height="14" rx="3" fill="url(#stairGrad)"/>
+
+    <!-- ── SIDE OUTPOST BUILDINGS ── -->
+    <!-- Left outpost -->
+    <rect x="218" y="685" width="85"  height="72" rx="4" fill="#3d4a58"/>
+    <rect x="214" y="675" width="93"  height="22" rx="3" fill="#cc3520"/>  <!-- red roof -->
+    <rect x="214" y="660" width="93"  height="18" rx="3" fill="#aa2a18"/>
+    <rect x="243" y="700" width="24"  height="30" rx="3" fill="#0033aa" opacity="0.85"/>
+    <!-- Left outpost window glow -->
+    <rect x="243" y="700" width="24"  height="30" rx="3" fill="url(#winGlow)" opacity="0.5"/>
+
+    <!-- Right outpost -->
+    <rect x="721" y="685" width="85"  height="72" rx="4" fill="#3d4a58"/>
+    <rect x="717" y="675" width="93"  height="22" rx="3" fill="#cc3520"/>
+    <rect x="717" y="660" width="93"  height="18" rx="3" fill="#aa2a18"/>
+    <rect x="757" y="700" width="24"  height="30" rx="3" fill="#0033aa" opacity="0.85"/>
+    <rect x="757" y="700" width="24"  height="30" rx="3" fill="url(#winGlow)" opacity="0.5"/>
+
+    <!-- ── MAIN TOWER ── -->
+    <!-- Tower body (isometric-ish look via two rects) -->
+    <!-- Side face (right shading) -->
+    <rect x="612" y="345" width="40" height="400" fill="#2e3a48"/>
+
+    <!-- Front face -->
+    <rect x="380" y="345" width="232" height="400" fill="url(#towerFace)"/>
+
+    <!-- Stone block texture lines on tower -->
+    <line x1="380" y1="400" x2="612" y2="400" stroke="#2a3545" stroke-width="1.5" opacity="0.7"/>
+    <line x1="380" y1="460" x2="612" y2="460" stroke="#2a3545" stroke-width="1.5" opacity="0.7"/>
+    <line x1="380" y1="520" x2="612" y2="520" stroke="#2a3545" stroke-width="1.5" opacity="0.7"/>
+    <line x1="380" y1="580" x2="612" y2="580" stroke="#2a3545" stroke-width="1.5" opacity="0.7"/>
+    <line x1="380" y1="640" x2="612" y2="640" stroke="#2a3545" stroke-width="1.5" opacity="0.7"/>
+    <line x1="380" y1="700" x2="612" y2="700" stroke="#2a3545" stroke-width="1.5" opacity="0.7"/>
+    <!-- Vertical mortar -->
+    <line x1="496" y1="345" x2="496" y2="745" stroke="#2a3545" stroke-width="1" opacity="0.5"/>
+
+    <!-- ── BATTLEMENTS ── -->
+    <!-- Parapet base -->
+    <rect x="360" y="305" width="272" height="55" fill="#404e60"/>
+    <!-- Merlons -->
+    <rect x="360" y="250" width="52" height="72" rx="5" fill="#404e60"/>
+    <rect x="430" y="250" width="52" height="72" rx="5" fill="#404e60"/>
+    <rect x="500" y="250" width="52" height="72" rx="5" fill="#404e60"/>
+    <rect x="570" y="250" width="52" height="72" rx="5" fill="#404e60"/>
+    <!-- Battlement highlight top edges -->
+    <rect x="360" y="250" width="52" height="5" rx="2" fill="#556070" opacity="0.8"/>
+    <rect x="430" y="250" width="52" height="5" rx="2" fill="#556070" opacity="0.8"/>
+    <rect x="500" y="250" width="52" height="5" rx="2" fill="#556070" opacity="0.8"/>
+    <rect x="570" y="250" width="52" height="5" rx="2" fill="#556070" opacity="0.8"/>
+
+    <!-- Corner towers (small) -->
+    <rect x="355" y="295" width="35" height="80" rx="4" fill="#4a5868"/>
+    <rect x="602" y="295" width="35" height="80" rx="4" fill="#3e4c5a"/>
+
+    <!-- ── TOWER WINDOWS ── -->
+    <!-- Row 1 -->
+    <rect x="420" y="380" width="44" height="58" rx="6" fill="#001a88"/>
+    <rect x="420" y="380" width="44" height="58" rx="6" fill="url(#winGlow)" opacity="0.85"/>
+    <rect x="528" y="380" width="44" height="58" rx="6" fill="#001a88"/>
+    <rect x="528" y="380" width="44" height="58" rx="6" fill="url(#winGlow)" opacity="0.85"/>
+    <!-- Row 2 -->
+    <rect x="420" y="490" width="44" height="58" rx="6" fill="#001a88"/>
+    <rect x="420" y="490" width="44" height="58" rx="6" fill="url(#winGlow)" opacity="0.7"/>
+    <rect x="528" y="490" width="44" height="58" rx="6" fill="#001a88"/>
+    <rect x="528" y="490" width="44" height="58" rx="6" fill="url(#winGlow)" opacity="0.7"/>
+    <!-- Row 3 -->
+    <rect x="420" y="600" width="44" height="58" rx="6" fill="#001a88"/>
+    <rect x="420" y="600" width="44" height="58" rx="6" fill="url(#winGlow)" opacity="0.5"/>
+    <rect x="528" y="600" width="44" height="58" rx="6" fill="#001a88"/>
+    <rect x="528" y="600" width="44" height="58" rx="6" fill="url(#winGlow)" opacity="0.5"/>
+    <!-- Arch door -->
+    <rect x="474" y="670" width="44" height="75" rx="22" fill="#001a88" opacity="0.9"/>
+
+    <!-- Window glow halos -->
+    <ellipse cx="442" cy="409" rx="30" ry="20" fill="#2266ff" opacity="0.25" filter="url(#tinyGlow)"/>
+    <ellipse cx="550" cy="409" rx="30" ry="20" fill="#2266ff" opacity="0.25" filter="url(#tinyGlow)"/>
+
+    <!-- ── FLAG ── -->
+    <!-- Pole -->
+    <line x1="512" y1="140" x2="512" y2="258" stroke="#aab0bb" stroke-width="7" stroke-linecap="round"/>
+    <!-- Flag -->
+    <path d="M 512,148 L 648,178 L 512,210 Z" fill="#cc2020"/>
+    <path d="M 512,148 L 648,178 L 630,178 L 512,148" fill="#aa1818" opacity="0.5"/>
+    <!-- Gold orb on top -->
+    <circle cx="512" cy="138" r="14" fill="url(#gold)" filter="url(#tinyGlow)"/>
+    <circle cx="507" cy="133" r="4"  fill="#fff" opacity="0.5"/>
+
+    <!-- ── LIGHTNING BOLT (tesla cannon arm) ── -->
+    <!-- Left arm lightning -->
+    <path d="M 380,430 L 290,400 L 310,425 L 235,415" stroke="#00ffdd" stroke-width="3.5" fill="none"
+          stroke-linecap="round" stroke-linejoin="round" opacity="0.9" filter="url(#tinyGlow)"/>
+    <!-- Right arm lightning -->
+    <path d="M 612,430 L 700,400 L 680,425 L 755,415" stroke="#00ffdd" stroke-width="3.5" fill="none"
+          stroke-linecap="round" stroke-linejoin="round" opacity="0.9" filter="url(#tinyGlow)"/>
+
+    <!-- ── ENEMY PATH ── -->
+    <!-- Curved dirt path left -->
+    <path d="M 50,960 Q 100,880 180,840 Q 280,800 380,778 Q 440,768 480,758"
+          stroke="#6b5a3a" stroke-width="32" fill="none" stroke-linecap="round" opacity="0.75"/>
+    <path d="M 50,960 Q 100,880 180,840 Q 280,800 380,778 Q 440,768 480,758"
+          stroke="#7a6840" stroke-width="20" fill="none" stroke-linecap="round" opacity="0.5"/>
+    <!-- Curved dirt path right -->
+    <path d="M 974,960 Q 924,880 844,840 Q 744,800 644,778 Q 584,768 544,758"
+          stroke="#6b5a3a" stroke-width="32" fill="none" stroke-linecap="round" opacity="0.75"/>
+    <path d="M 974,960 Q 924,880 844,840 Q 744,800 644,778 Q 584,768 544,758"
+          stroke="#7a6840" stroke-width="20" fill="none" stroke-linecap="round" opacity="0.5"/>
+
+    <!-- ── ENEMIES ── -->
+    <!-- Helper: each enemy is a circle with HP bar -->
+
+    <!-- LEFT path: Grunt (gray) -->
+    <circle cx="148" cy="878" r="26" fill="#222" opacity="0.4"/>
+    <circle cx="148" cy="874" r="26" fill="#999aaa" stroke="#666677" stroke-width="3"/>
+    <rect x="124" y="842" width="48" height="6" rx="3" fill="#222"/>
+    <rect x="124" y="842" width="38" height="6" rx="3" fill="#22cc22"/>
+
+    <!-- LEFT path: Armored (steel blue) -->
+    <circle cx="248" cy="836" r="26" fill="#222" opacity="0.4"/>
+    <circle cx="248" cy="832" r="26" fill="#4a78b5" stroke="#2a5898" stroke-width="3.5"/>
+    <rect x="224" y="800" width="48" height="6" rx="3" fill="#222"/>
+    <rect x="224" y="800" width="28" height="6" rx="3" fill="#eebb00"/>
+
+    <!-- LEFT path: Berserker (deep orange) — slightly bigger feel -->
+    <circle cx="338" cy="806" r="24" fill="#222" opacity="0.4"/>
+    <circle cx="338" cy="802" r="24" fill="#f04800" stroke="#c03000" stroke-width="3"/>
+    <rect x="316" y="772" width="44" height="6" rx="3" fill="#222"/>
+    <rect x="316" y="772" width="44" height="6" rx="3" fill="#cc2200"/>
+
+    <!-- RIGHT path: Swift (bright yellow) -->
+    <circle cx="876" cy="878" r="26" fill="#222" opacity="0.4"/>
+    <circle cx="876" cy="874" r="26" fill="#f0d800" stroke="#c0a800" stroke-width="3"/>
+    <rect x="852" y="842" width="48" height="6" rx="3" fill="#222"/>
+    <rect x="852" y="842" width="42" height="6" rx="3" fill="#22cc22"/>
+
+    <!-- RIGHT path: Phantom (ice blue, translucent) -->
+    <circle cx="776" cy="836" r="26" fill="#222" opacity="0.3"/>
+    <circle cx="776" cy="832" r="26" fill="#88cdf0" stroke="#4498c0" stroke-width="3" opacity="0.72"/>
+    <rect x="752" y="800" width="48" height="6" rx="3" fill="#222"/>
+    <rect x="752" y="800" width="32" height="6" rx="3" fill="#22cc22"/>
+
+    <!-- RIGHT path: Vampire (crimson) -->
+    <circle cx="680" cy="806" r="24" fill="#222" opacity="0.4"/>
+    <circle cx="680" cy="802" r="24" fill="#aa0f1e" stroke="#880010" stroke-width="3"/>
+    <rect x="658" y="772" width="44" height="6" rx="3" fill="#222"/>
+    <rect x="658" y="772" width="20" height="6" rx="3" fill="#cc2200"/>
+
+    <!-- ── PROJECTILES ── -->
+    <!-- Cannon ball hitting left Berserker -->
+    <circle cx="350" cy="680" r="9" fill="#aabbcc" filter="url(#tinyGlow)"/>
+    <line x1="380" y1="510" x2="350" y2="680" stroke="#aabbcc" stroke-width="2.5" opacity="0.4"/>
+
+    <!-- Tesla bolt to right Vampire -->
+    <path d="M 612,450 L 720,560 L 695,590 L 740,680" stroke="#00ffdd" stroke-width="3" fill="none"
+          stroke-linecap="round" opacity="0.8" filter="url(#tinyGlow)"/>
+    <circle cx="740" cy="684" r="7" fill="#00ffdd" opacity="0.9" filter="url(#tinyGlow)"/>
+
+    <!-- Frost projectile (blue) -->
+    <circle cx="220" cy="700" r="8" fill="#88ddff" opacity="0.85" filter="url(#tinyGlow)"/>
+    <line x1="380" y1="550" x2="220" y2="700" stroke="#88ddff" stroke-width="2" opacity="0.35"/>
+
+    <!-- Missile trail (right side) -->
+    <circle cx="820" cy="660" r="9" fill="#ff8833" opacity="0.9" filter="url(#tinyGlow)"/>
+    <path d="M 612,500 Q 720,520 820,660" stroke="#ff8833" stroke-width="2" fill="none" opacity="0.35"/>
+
+    <!-- ── GOLD COINS SCATTERED ── -->
+    <circle cx="468" cy="742" r="13" fill="url(#gold)" stroke="#aa7700" stroke-width="2" filter="url(#tinyGlow)"/>
+    <circle cx="468" cy="742" r="5"  fill="#fff" opacity="0.3"/>
+    <circle cx="556" cy="740" r="13" fill="url(#gold)" stroke="#aa7700" stroke-width="2" filter="url(#tinyGlow)"/>
+    <circle cx="556" cy="740" r="5"  fill="#fff" opacity="0.3"/>
+
+    <!-- ── VIGNETTE (darken edges) ── -->
+    <radialGradient id="vignette" cx="50%" cy="50%" r="70%">
+      <stop offset="0%"   stop-color="#000" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0.45"/>
+    </radialGradient>
+    <rect width="1024" height="1024" fill="url(#vignette)"/>
+
+    <!-- ── ROUNDED CORNER BORDER SHINE ── -->
+    <rect width="1024" height="1024" rx="224" ry="224"
+          fill="none" stroke="white" stroke-width="3" opacity="0.08"/>
+
+  </g>
+</svg>
+</body>
+</html>

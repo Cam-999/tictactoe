@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Tower Defense</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#070B14;--surface:#0D1526;--elevated:#111E35;--path:#0F2240;
+  --blue:#1A7AFF;--teal:#00CED1;--purple:#7B2FBE;--amber:#E08C00;
+  --danger:#C0392B;--text:#E8EBF0;--muted:#6B7FA3;--green:#22cc44;
+}
+body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,'Segoe UI',sans-serif;
+  display:flex;flex-direction:column;align-items:center;min-height:100dvh;overflow-x:hidden}
+.screen{width:100%;max-width:540px;display:flex;flex-direction:column;align-items:center}
+.hidden{display:none!important}
+
+/* ── MENU ── */
+#menu-screen{justify-content:center;min-height:100dvh;gap:36px;padding:24px}
+#menu-screen h1{font-size:60px;font-weight:900;line-height:1;text-align:center;color:var(--blue)}
+#menu-screen h1 span{display:block;font-size:38px;color:var(--text);margin-top:4px}
+#menu-screen p{color:var(--muted);font-size:15px;text-align:center}
+
+/* ── BUTTONS ── */
+.btn{padding:14px 36px;border:none;border-radius:12px;font-size:17px;font-weight:700;
+  cursor:pointer;letter-spacing:.4px;transition:opacity .15s,transform .1s}
+.btn:active{transform:scale(.97)}
+.btn-blue{background:var(--blue);color:#fff}
+.btn-grey{background:var(--elevated);color:var(--text)}
+.btn-full{width:100%}
+
+/* ── HUD ── */
+#hud{width:100%;max-width:540px;display:flex;align-items:center;justify-content:space-between;
+  padding:8px 14px;background:var(--surface);border-bottom:1px solid rgba(255,255,255,.05)}
+.hud-pill{display:flex;align-items:center;gap:6px;background:var(--elevated);
+  padding:5px 12px;border-radius:10px;font-size:15px;font-weight:700}
+.hud-pill .ic{font-size:12px}
+.red-ic{color:var(--danger)}.amber-ic{color:var(--amber)}
+.hud-mid{text-align:center}
+.hud-mid .lbl{font-size:10px;color:var(--muted);font-weight:600;letter-spacing:1px}
+.hud-mid .val{font-size:17px;font-weight:800}
+#muteBtn{background:var(--elevated);border:none;border-radius:10px;padding:5px 10px;
+  font-size:16px;cursor:pointer;line-height:1}
+
+/* ── CANVAS ── */
+#canvas-wrap{position:relative;width:100%;max-width:540px;background:var(--bg);overflow:hidden}
+#canvas{display:block;width:100%;cursor:crosshair}
+
+/* ── WAVE BTN ROW ── */
+#wave-row{width:100%;max-width:540px;padding:8px 14px;background:var(--surface);
+  display:flex;justify-content:center}
+
+/* ── PALETTE ── */
+#palette{width:100%;max-width:540px;background:var(--surface);padding:8px 10px;
+  display:flex;gap:6px;overflow-x:auto;border-top:1px solid rgba(255,255,255,.05)}
+.tb{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:3px;
+  padding:7px 10px;background:var(--elevated);border:2px solid transparent;
+  border-radius:10px;cursor:pointer;min-width:66px;color:var(--text);transition:border-color .15s}
+.tb.sel{border-color:var(--blue);background:rgba(26,122,255,.15)}
+.tb.dim{opacity:.42}
+.tb .ic{font-size:20px}.tb .nm{font-size:11px;font-weight:700}.tb .cs{font-size:11px;color:var(--amber)}
+
+/* ── SHOP ── */
+#shop-overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);display:flex;
+  align-items:flex-end;justify-content:center;z-index:100}
+#shop-panel{width:100%;max-width:540px;max-height:88dvh;background:var(--surface);
+  border-radius:20px 20px 0 0;display:flex;flex-direction:column;overflow:hidden}
+#shop-hdr{padding:16px 20px 10px;display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid rgba(255,255,255,.06)}
+#shop-hdr h2{font-size:18px;font-weight:800}
+#shop-gold{color:var(--amber);font-weight:700;font-size:15px}
+#shop-cats{display:flex;gap:6px;padding:10px 14px;overflow-x:auto;
+  border-bottom:1px solid rgba(255,255,255,.06)}
+.cat-btn{flex:0 0 auto;padding:5px 12px;border:none;border-radius:8px;
+  background:var(--elevated);color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}
+.cat-btn.on{background:var(--blue);color:#fff}
+#shop-items{flex:1;overflow-y:auto;padding:12px 14px;display:grid;
+  grid-template-columns:1fr 1fr;gap:10px;align-content:start}
+.uc{background:var(--elevated);border-radius:12px;padding:12px;
+  display:flex;flex-direction:column;gap:6px}
+.uc.owned{border:1px solid var(--green)}
+.uc.locked{opacity:.4}
+.uc-top{display:flex;align-items:center;gap:8px}
+.uc-ico{font-size:20px}
+.uc-name{font-size:13px;font-weight:700}
+.uc-desc{font-size:11px;color:var(--muted);line-height:1.4}
+.uc-buy{margin-top:auto;padding:5px 8px;border:none;border-radius:7px;
+  background:var(--blue);color:#fff;font-size:12px;font-weight:700;cursor:pointer}
+.uc-buy:disabled{background:rgba(255,255,255,.1);color:var(--muted);cursor:default}
+.uc-buy.ok{background:rgba(34,204,68,.2);color:var(--green)}
+#shop-ftr{padding:12px 14px;border-top:1px solid rgba(255,255,255,.06)}
+
+/* ── GAME OVER ── */
+#go-screen{justify-content:center;min-height:100dvh;gap:32px;padding:20px}
+#go-screen h2{font-size:48px;font-weight:900}
+.stat-box{width:100%;background:var(--surface);border-radius:16px;padding:20px 24px;
+  display:flex;flex-direction:column;gap:14px}
+.stat-row{display:flex;justify-content:space-between;align-items:center;font-size:16px}
+.stat-row .lb{color:var(--muted)}.stat-row .vl{font-weight:700;font-size:18px}
+.go-btns{display:flex;flex-direction:column;gap:10px;width:100%}
+</style>
+</head>
+<body>
+
+<!-- ════ MENU ════ -->
+<div id="menu-screen" class="screen">
+  <h1>TOWER<span>DEFENSE</span></h1>
+  <p>100 Waves. Survive them all.</p>
+  <button class="btn btn-blue" onclick="startGame()">PLAY</button>
+</div>
+
+<!-- ════ GAME ════ -->
+<div id="game-screen" class="screen hidden">
+  <div id="hud">
+    <div class="hud-pill"><span class="ic red-ic">♥</span><span id="hLives">20</span></div>
+    <div class="hud-mid"><div class="lbl">WAVE</div><div class="val" id="hWave">0 / 100</div></div>
+    <div class="hud-pill"><span class="ic amber-ic">●</span><span id="hGold">150</span></div>
+    <button id="muteBtn" onclick="toggleMute()">🔊</button>
+  </div>
+  <div id="canvas-wrap">
+    <canvas id="canvas" width="520" height="600"></canvas>
+  </div>
+  <div id="wave-row">
+    <button class="btn btn-blue" id="waveBtn" onclick="handleWaveBtn()">START GAME</button>
+  </div>
+  <div id="palette"></div>
+</div>
+
+<!-- ════ SHOP ════ -->
+<div id="shop-overlay" class="hidden">
+  <div id="shop-panel">
+    <div id="shop-hdr">
+      <h2>Upgrade Shop</h2>
+      <span id="shop-gold"></span>
+    </div>
+    <div id="shop-cats"></div>
+    <div id="shop-items"></div>
+    <div id="shop-ftr">
+      <button class="btn btn-blue btn-full" onclick="closeShop()">CONTINUE →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ GAME OVER ════ -->
+<div id="go-screen" class="screen hidden">
+  <h2 id="go-title">GAME OVER</h2>
+  <div class="stat-box">
+    <div class="stat-row"><span class="lb">Wave Reached</span><span class="vl" id="go-wave">0</span></div>
+    <div class="stat-row"><span class="lb">Score</span><span class="vl" id="go-score">0</span></div>
+    <div class="stat-row"><span class="lb">Enemies Killed</span><span class="vl" id="go-kills">0</span></div>
+  </div>
+  <div class="go-btns">
+    <button class="btn btn-blue btn-full" onclick="startGame()">TRY AGAIN</button>
+    <button class="btn btn-grey btn-full" onclick="showMenu()">Main Menu</button>
+  </div>
+</div>
+
+<script>'use strict';
+
+// ══════════════════════════════════════════════
+//  CONSTANTS
+// ══════════════════════════════════════════════
+const CELL = 40, COLS = 13, ROWS = 15, CW = 520, CH = 600;
+
+const C = {
+  bg:'#070B14', surface:'#0D1526', elevated:'#111E35', path:'#0F2240',
+  blue:'#1A7AFF', teal:'#00CED1', purple:'#7B2FBE', amber:'#E08C00',
+  danger:'#C0392B', text:'#E8EBF0', muted:'#6B7FA3', green:'#22cc44',
+};
+
+// Waypoints in canvas pixels
+const WP = [
+  {x:-20, y:60},
+  {x:460, y:60},
+  {x:460, y:180},
+  {x:60,  y:180},
+  {x:60,  y:300},
+  {x:460, y:300},
+  {x:460, y:420},
+  {x:60,  y:420},
+  {x:60,  y:540},
+  {x:540, y:540},
+];
+
+// Mark path grid cells
+const PATH = new Set();
+function markRow(r,c0,c1){for(let c=Math.min(c0,c1);c<=Math.max(c0,c1);c++)PATH.add(c+','+r)}
+function markCol(c,r0,r1){for(let r=Math.min(r0,r1);r<=Math.max(r0,r1);r++)PATH.add(c+','+r)}
+markRow(1,0,11); markCol(11,1,4);  markRow(4,1,11);
+markCol(1,4,7);  markRow(7,1,11);  markCol(11,7,10);
+markRow(10,1,11);markCol(1,10,13); markRow(13,1,12);
+
+// ══════════════════════════════════════════════
+//  DEFINITIONS
+// ══════════════════════════════════════════════
+const TD = {
+  cannon: {name:'Cannon', e:'🔵', dmg:40,  rate:.8,  range:120, cost:100, color:C.blue,   splash:40,         desc:'AoE splash r=40'},
+  sniper: {name:'Sniper', e:'🟢', dmg:120, rate:.3,  range:250, cost:150, color:C.green,  pierce:true,       desc:'Ignores armor'},
+  tesla:  {name:'Tesla',  e:'🟣', dmg:20,  rate:3.0, range:90,  cost:120, color:C.purple, chain:2,           desc:'Chains to 2 enemies'},
+  frost:  {name:'Frost',  e:'🔷', dmg:10,  rate:1.5, range:100, cost:80,  color:C.teal,   slow:.5, slowDur:2, desc:'Slows 50% for 2s'},
+  missile:{name:'Missile',e:'🔴', dmg:80,  rate:.5,  range:200, cost:200, color:C.danger, splash:60,         desc:'AoE tracking'},
+};
+const TORDER = ['cannon','sniper','tesla','frost','missile'];
+
+// Enemy definitions — matches iOS Enemy.swift exactly
+const ED = {
+  grunt:    {name:'Grunt',    hp:80,   spd:80,  reward:10,  color:'#999aaa', sz:8,  armor:1.0, regen:0,  boss:false},
+  armored:  {name:'Armored',  hp:300,  spd:50,  reward:25,  color:'#4a78b5', sz:11, armor:.50, regen:0,  boss:false},
+  berserker:{name:'Berserker',hp:150,  spd:95,  reward:22,  color:'#f04800', sz:9,  armor:1.0, regen:0,  boss:false, berserkMult:1.8},
+  swift:    {name:'Swift',    hp:60,   spd:180, reward:15,  color:'#f0d800', sz:7,  armor:1.0, regen:0,  boss:false},
+  phantom:  {name:'Phantom',  hp:90,   spd:110, reward:25,  color:'#88cdf0', sz:8,  armor:1.0, regen:0,  boss:false, dodge:.25},
+  shielded: {name:'Shielded', hp:200,  spd:55,  reward:35,  color:'#c8d0e8', sz:9,  armor:.65, regen:0,  boss:false, shieldHp:200},
+  healer:   {name:'Healer',   hp:120,  spd:70,  reward:30,  color:'#33cc66', sz:9,  armor:1.0, regen:5,  boss:false},
+  swarm:    {name:'Swarm',    hp:45,   spd:160, reward:8,   color:'#a5f010', sz:6,  armor:1.0, regen:0,  boss:false, splits:3, splitType:'grunt'},
+  splitter: {name:'Splitter', hp:200,  spd:65,  reward:20,  color:'#e66611', sz:10, armor:1.0, regen:0,  boss:false, splits:2, splitType:'grunt'},
+  voidling: {name:'Voidling', hp:350,  spd:55,  reward:55,  color:'#4d0d80', sz:10, armor:1.0, regen:15, boss:false, slowImm:true},
+  vampire:  {name:'Vampire',  hp:180,  spd:90,  reward:45,  color:'#aa0f1e', sz:9,  armor:1.0, regen:0,  boss:false, liveDrain:2},
+  wraith:   {name:'Wraith',   hp:120,  spd:200, reward:50,  color:'#e8e8fc', sz:8,  armor:1.0, regen:0,  boss:false, slowImm:true, dodge:.20},
+  colossus: {name:'Colossus', hp:1200, spd:28,  reward:150, color:'#724818', sz:18, armor:.70, regen:0,  boss:true,  splits:4, splitType:'armored'},
+  titan:    {name:'Titan',    hp:2000, spd:40,  reward:200, color:'#cc2222', sz:16, armor:1.0, regen:0,  boss:true,  slowImm:true},
+};
+
+// ── TIERED UPGRADES ───────────────────────────────────────────────────────────
+const UPGRADES = [
+  // ── Damage ──
+  {id:'d1',cat:'Damage',  name:'Iron Tips I',     ico:'⚔️',  desc:'+8% global damage',        cost:55,  fn:g=>{g.dM*=1.08}},
+  {id:'d2',cat:'Damage',  name:'Iron Tips II',    ico:'⚔️',  desc:'+12% global damage',       cost:95,  req:'d1', fn:g=>{g.dM*=1.12}},
+  {id:'d3',cat:'Damage',  name:'Steel Core III',  ico:'🔩',  desc:'+18% global damage',       cost:160, req:'d2', fn:g=>{g.dM*=1.18}},
+  {id:'d4',cat:'Damage',  name:'Tungsten IV',     ico:'🔧',  desc:'+25% global damage',       cost:260, req:'d3', fn:g=>{g.dM*=1.25}},
+  {id:'d5',cat:'Damage',  name:'Armor Pierce',    ico:'🗡️', desc:'All towers ignore armor',  cost:180, req:'d2', fn:g=>{g.pierce=true}},
+  {id:'d6',cat:'Damage',  name:'Crit Hit I',      ico:'🎰',  desc:'8% chance × 2× damage',   cost:120, fn:g=>{g.critChance=0.08;g.critMult=2}},
+  {id:'d7',cat:'Damage',  name:'Crit Hit II',     ico:'🎰',  desc:'15% chance × 3× damage',  cost:200, req:'d6', fn:g=>{g.critChance=0.15;g.critMult=3}},
+  {id:'d8',cat:'Damage',  name:'Overcharge',      ico:'💥',  desc:'+20% dmg, −10% rate',     cost:110, fn:g=>{g.dM*=1.20;g.rM*=0.90}},
+  // ── Fire Rate ──
+  {id:'r1',cat:'Fire Rate',name:'Quick Loader I',  ico:'⚡',  desc:'+10% fire rate',           cost:65,  fn:g=>{g.rM*=1.10}},
+  {id:'r2',cat:'Fire Rate',name:'Quick Loader II', ico:'⚡',  desc:'+15% fire rate',           cost:110, req:'r1', fn:g=>{g.rM*=1.15}},
+  {id:'r3',cat:'Fire Rate',name:'Rapid Reload III',ico:'⚡',  desc:'+20% fire rate',           cost:175, req:'r2', fn:g=>{g.rM*=1.20}},
+  {id:'r4',cat:'Fire Rate',name:'Hair Trigger IV', ico:'⚡',  desc:'+28% fire rate',           cost:270, req:'r3', fn:g=>{g.rM*=1.28}},
+  {id:'r5',cat:'Fire Rate',name:'Turbo Tesla',     ico:'⚡',  desc:'Tesla fires 2× faster',    cost:140, fn:g=>{g.turboT=true}},
+  {id:'r6',cat:'Fire Rate',name:'Sniper Focus',    ico:'🎯',  desc:'Sniper fires 1.5× faster', cost:150, fn:g=>{g.sniperF=true}},
+  // ── Range ──
+  {id:'g1',cat:'Range',   name:'Extended Barrel I',  ico:'🎯', desc:'+10% tower range',        cost:65,  fn:g=>{g.rangeM*=1.10}},
+  {id:'g2',cat:'Range',   name:'Extended Barrel II', ico:'🎯', desc:'+15% tower range',        cost:110, req:'g1', fn:g=>{g.rangeM*=1.15}},
+  {id:'g3',cat:'Range',   name:'Long Barrel III',    ico:'📡', desc:'+22% tower range',        cost:180, req:'g2', fn:g=>{g.rangeM*=1.22}},
+  {id:'g4',cat:'Range',   name:'Satellite Link IV',  ico:'📡', desc:'+30% tower range',        cost:280, req:'g3', fn:g=>{g.rangeM*=1.30}},
+  // ── Economy ──
+  {id:'e1',cat:'Economy', name:'Gold Fever I',  ico:'💰',  desc:'+12% gold from kills',     cost:70,  fn:g=>{g.goldM*=1.12}},
+  {id:'e2',cat:'Economy', name:'Gold Fever II', ico:'💰',  desc:'+18% gold from kills',     cost:120, req:'e1', fn:g=>{g.goldM*=1.18}},
+  {id:'e3',cat:'Economy', name:'Gold Rush III', ico:'💰',  desc:'+25% gold from kills',     cost:200, req:'e2', fn:g=>{g.goldM*=1.25}},
+  {id:'e4',cat:'Economy', name:'Interest I',    ico:'📈',  desc:'+4% gold each wave start', cost:130, fn:g=>{g.interestR=0.04}},
+  {id:'e5',cat:'Economy', name:'Interest II',   ico:'📈',  desc:'+8% gold each wave start', cost:210, req:'e4', fn:g=>{g.interestR=0.08}},
+  {id:'e6',cat:'Economy', name:'Bargain Bin',   ico:'🏷️', desc:'Towers 12% cheaper',       cost:90,  fn:g=>{g.disc=Math.min(g.disc,0.88)}},
+  {id:'e7',cat:'Economy', name:'Deep Discount', ico:'🏷️', desc:'Towers 22% cheaper',       cost:160, req:'e6', fn:g=>{g.disc=0.78}},
+  // ── Defense ──
+  {id:'v1',cat:'Defense', name:'Reinforced Wall I',  ico:'❤️', desc:'+2 lives',               cost:90,  fn:g=>{g.lives+=2}},
+  {id:'v2',cat:'Defense', name:'Reinforced Wall II', ico:'❤️', desc:'+3 lives',               cost:150, req:'v1', fn:g=>{g.lives+=3}},
+  {id:'v3',cat:'Defense', name:'Fortress III',       ico:'🏰', desc:'+5 lives',               cost:240, req:'v2', fn:g=>{g.lives+=5}},
+  {id:'v4',cat:'Defense', name:'Shield I',           ico:'🛡️',desc:'Block 1 enemy/wave',     cost:180, fn:g=>{g.shieldMax=Math.max(g.shieldMax,1)}},
+  {id:'v5',cat:'Defense', name:'Shield II',          ico:'🛡️',desc:'Block 2 enemies/wave',   cost:280, req:'v4', fn:g=>{g.shieldMax=2}},
+  {id:'v6',cat:'Defense', name:'Last Stand',         ico:'💪', desc:'2× dmg when ≤3 lives',  cost:280, fn:g=>{g.lastStand=true}},
+  // ── Special ──
+  {id:'s1',cat:'Special', name:'Cryo Burst I',    ico:'❄️', desc:'Frost slows 65% for 2.5s', cost:130, fn:g=>{g.cryoFactor=.35;g.cryoDur=2.5}},
+  {id:'s2',cat:'Special', name:'Cryo Burst II',   ico:'❄️', desc:'Frost slows 80% for 3.5s', cost:210, req:'s1', fn:g=>{g.cryoFactor=.20;g.cryoDur=3.5}},
+  {id:'s3',cat:'Special', name:'Chain Lv.II',     ico:'⛈️', desc:'Tesla chains +2 extra',    cost:160, fn:g=>{g.chainExtra=Math.max(g.chainExtra,2)}},
+  {id:'s4',cat:'Special', name:'Chain Lv.III',    ico:'⛈️', desc:'Tesla chains to 6 total',  cost:260, req:'s3', fn:g=>{g.chainExtra=4}},
+  {id:'s5',cat:'Special', name:'Splash Master I', ico:'💣', desc:'+30% AoE radius',           cost:130, fn:g=>{g.splashMult=Math.max(g.splashMult,1.3)}},
+  {id:'s6',cat:'Special', name:'Splash Master II',ico:'💣', desc:'+60% AoE radius',           cost:210, req:'s5', fn:g=>{g.splashMult=1.6}},
+  {id:'s7',cat:'Special', name:'Death Nova',      ico:'💫', desc:'Enemies explode on death',  cost:270, fn:g=>{g.nova=true}},
+  {id:'s8',cat:'Special', name:'Death Gold',      ico:'✨', desc:'Nova kills drop gold',      cost:190, req:'s7', fn:g=>{g.novaGold=true}},
+  {id:'s9',cat:'Special', name:'Seeker Missiles', ico:'🚀', desc:'Missiles 40% faster',       cost:160, fn:g=>{g.missileSpd=350}},
+];
+const UCATS = ['Damage','Fire Rate','Range','Economy','Defense','Special'];
+
+// ══════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════
+let gs, towers, enemies, projs, parts, selT, shopCat, raf;
+let pending = 0;
+let spawnTimers = [];
+
+function mkGs() {
+  return {
+    phase:'playing', wave:0, gold:150, lives:20, score:0, kills:0,
+    waveOn:false, owned:new Set(), shieldLeft:0,
+    dM:1, rM:1, rangeM:1, goldM:1, disc:1,
+    pierce:false, turboT:false, sniperF:false, lastStand:false,
+    nova:false, novaGold:false,
+    critChance:0, critMult:2.5,
+    splashMult:1,
+    cryoFactor:.5, cryoDur:2,
+    chainExtra:0,
+    shieldMax:0,
+    interestR:0,
+    missileSpd:250,
+  };
+}
+
+// ══════════════════════════════════════════════
+//  SOUND
+// ══════════════════════════════════════════════
+let AC = null, muted = false;
+
+function getAC() {
+  if (!AC) AC = new (window.AudioContext || window.webkitAudioContext)();
+  return AC;
+}
+
+function playSound(type) {
+  if (muted) return;
+  try {
+    const ac = getAC();
+    const g = ac.createGain();
+    g.connect(ac.destination);
+    const o = ac.createOscillator();
+    o.connect(g);
+    const now = ac.currentTime;
+    switch (type) {
+      case 'cannon':
+        o.type='sine'; o.frequency.setValueAtTime(90,now);
+        o.frequency.linearRampToValueAtTime(35,now+.22);
+        g.gain.setValueAtTime(.18,now); g.gain.linearRampToValueAtTime(0,now+.22);
+        o.start(now); o.stop(now+.22); break;
+      case 'sniper':
+        o.type='sawtooth'; o.frequency.setValueAtTime(700,now);
+        o.frequency.linearRampToValueAtTime(150,now+.12);
+        g.gain.setValueAtTime(.18,now); g.gain.linearRampToValueAtTime(0,now+.12);
+        o.start(now); o.stop(now+.12); break;
+      case 'tesla':
+        o.type='square'; o.frequency.setValueAtTime(400,now);
+        o.frequency.linearRampToValueAtTime(600,now+.09);
+        o.frequency.linearRampToValueAtTime(200,now+.18);
+        g.gain.setValueAtTime(.12,now); g.gain.linearRampToValueAtTime(0,now+.18);
+        o.start(now); o.stop(now+.18); break;
+      case 'frost':
+        o.type='sine'; o.frequency.setValueAtTime(600,now);
+        o.frequency.linearRampToValueAtTime(900,now+.15);
+        g.gain.setValueAtTime(.14,now); g.gain.linearRampToValueAtTime(0,now+.15);
+        o.start(now); o.stop(now+.15); break;
+      case 'missile':
+        o.type='triangle'; o.frequency.setValueAtTime(180,now);
+        o.frequency.linearRampToValueAtTime(80,now+.20);
+        g.gain.setValueAtTime(.18,now); g.gain.linearRampToValueAtTime(0,now+.20);
+        o.start(now); o.stop(now+.20); break;
+      case 'hit':
+        o.type='sine'; o.frequency.setValueAtTime(1200,now);
+        o.frequency.linearRampToValueAtTime(800,now+.08);
+        g.gain.setValueAtTime(.10,now); g.gain.linearRampToValueAtTime(0,now+.08);
+        o.start(now); o.stop(now+.08); break;
+    }
+  } catch(e) {}
+}
+
+function toggleMute() {
+  muted = !muted;
+  document.getElementById('muteBtn').textContent = muted ? '🔇' : '🔊';
+}
+
+// ══════════════════════════════════════════════
+//  CANVAS
+// ══════════════════════════════════════════════
+const canvas = document.getElementById('canvas');
+const ctx    = canvas.getContext('2d');
+let lastT = 0, hoverC = null;
+
+// ══════════════════════════════════════════════
+//  UTIL
+// ══════════════════════════════════════════════
+const dist    = (a,b) => Math.hypot(a.x-b.x, a.y-b.y);
+const clamp   = (v,a,b) => Math.max(a,Math.min(b,v));
+const cellOf  = (px,py) => ({col:Math.floor(px/CELL), row:Math.floor(py/CELL)});
+const isPath  = (c,r) => PATH.has(c+','+r);
+const hasTower= (c,r) => towers.some(t=>t.col===c&&t.row===r);
+const canPlace= (c,r) => c>=0&&c<COLS&&r>=0&&r<ROWS&&!isPath(c,r)&&!hasTower(c,r);
+const tCost   = t => Math.round(TD[t].cost * gs.disc);
+
+function rrect(ctx,x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y); ctx.arcTo(x+w,y,x+w,y+r,r);
+  ctx.lineTo(x+w,y+h-r); ctx.arcTo(x+w,y+h,x+w-r,y+h,r);
+  ctx.lineTo(x+r,y+h); ctx.arcTo(x,y+h,x,y+h-r,r);
+  ctx.lineTo(x,y+r); ctx.arcTo(x,y,x+r,y,r);
+  ctx.closePath();
+}
+
+// ══════════════════════════════════════════════
+//  ENEMY
+// ══════════════════════════════════════════════
+function mkEnemy(type, hpSc, spdSc, wpStart=1) {
+  const d = ED[type];
+  return {
+    type, x:WP[0].x, y:WP[0].y, wpi:wpStart,
+    hp:d.hp*hpSc, mhp:d.hp*hpSc, spd:d.spd*spdSc, bspd:d.spd*spdSc,
+    reward:d.reward, armor:d.armor, regen:d.regen||0,
+    slowImm:!!d.slowImm, boss:!!d.boss,
+    splits:d.splits||0, splitType:d.splitType||'grunt',
+    dodge:d.dodge||0, liveDrain:d.liveDrain||1,
+    shield:d.shieldHp||0,
+    berserkMult:d.berserkMult||1, hasBerserked:false,
+    dead:false, reached:false, slowed:false, slowT:0,
+  };
+}
+
+function updateEnemies(dt) {
+  for (const e of enemies) {
+    if (e.dead || e.reached) continue;
+    if (e.regen > 0) e.hp = Math.min(e.mhp, e.hp + e.regen * dt);
+    if (e.slowT > 0) { e.slowT -= dt; if (e.slowT <= 0) { e.slowed = false; e.spd = e.bspd; } }
+    if (e.wpi >= WP.length) { escapeE(e); continue; }
+    const wp = WP[e.wpi];
+    const dx = wp.x - e.x, dy = wp.y - e.y, d = Math.hypot(dx, dy);
+    const step = e.spd * dt;
+    if (d <= step) { e.x = wp.x; e.y = wp.y; e.wpi++; if (e.wpi >= WP.length) escapeE(e); }
+    else { e.x += dx/d*step; e.y += dy/d*step; }
+  }
+  enemies = enemies.filter(e => !e.dead && !e.reached);
+}
+
+function escapeE(e) {
+  e.reached = true;
+  const drains = e.liveDrain || 1;
+  for (let i = 0; i < drains; i++) {
+    if (gs.shieldLeft > 0) { gs.shieldLeft--; spark(e.x, e.y, 'shield'); }
+    else { gs.lives = Math.max(0, gs.lives - 1); updateHUD(); if (gs.lives <= 0) { gameOver(); return; } }
+  }
+  updateHUD();
+  resolvePending();
+}
+
+function hurtE(e, raw, ignArmor=false) {
+  if (e.dead) return;
+  // Dodge check (phantom 25%, wraith 20%)
+  if (e.dodge > 0 && Math.random() < e.dodge) { spark(e.x, e.y, 'dodge'); return; }
+  let dmg = raw * (ignArmor ? 1 : e.armor);
+  if (gs.lastStand && gs.lives <= 3) dmg *= 2;
+  if (gs.critChance > 0 && Math.random() < gs.critChance) { dmg *= gs.critMult; spark(e.x, e.y, 'crit'); }
+  // Ablative shield absorbs first (shielded enemy)
+  if (e.shield > 0) {
+    if (dmg <= e.shield) { e.shield -= dmg; return; }
+    dmg -= e.shield; e.shield = 0;
+  }
+  e.hp -= dmg;
+  // Berserker enrages at 50% HP
+  if (!e.hasBerserked && e.berserkMult > 1 && e.hp <= e.mhp * 0.5) {
+    e.hasBerserked = true;
+    e.bspd *= e.berserkMult;
+    if (!e.slowed) e.spd = e.bspd;
+    spark(e.x, e.y, 'berserk');
+  }
+  if (e.hp <= 0) killE(e);
+}
+
+function killE(e) {
+  if (e.dead) return;
+  e.dead = true;
+  const gold = Math.round(e.reward * gs.goldM);
+  gs.gold += gold; gs.score += gold; gs.kills++;
+  updateHUD();
+  // Split on death
+  if (e.splits > 0) for (let i = 0; i < e.splits; i++) spawnSplit(e, e.splitType);
+  // Death Nova (upgrade s7)
+  if (gs.nova) {
+    spark(e.x, e.y, 'nova');
+    for (const o of enemies) {
+      if (!o.dead && !o.reached && dist(e,o) <= 60) {
+        o.hp -= 30 * gs.dM; if (o.hp <= 0) killE(o);
+        if (gs.novaGold) { const ng = Math.round(5*gs.goldM); gs.gold += ng; gs.score += ng; }
+      }
+    }
+    updateHUD();
+  }
+  spark(e.x, e.y, 'die');
+  resolvePending();
+}
+
+function spawnSplit(parent, type='grunt') {
+  pending++;
+  const g = mkEnemy(type, 1, 1, parent.wpi);
+  g.x = parent.x; g.y = parent.y;
+  enemies.push(g);
+}
+
+function slowE(e, factor, dur) {
+  if (e.slowImm || e.slowed) return;
+  e.slowed = true; e.spd = e.bspd * factor; e.slowT = dur;
+}
+
+// ══════════════════════════════════════════════
+//  TOWERS
+// ══════════════════════════════════════════════
+function placeTower(col, row) {
+  const cost = tCost(selT);
+  if (gs.gold < cost || !canPlace(col, row)) return;
+  gs.gold -= cost; updateHUD();
+  towers.push({col, row, type:selT, x:col*CELL+CELL/2, y:row*CELL+CELL/2, cd:0, aim:0});
+  renderPal();
+}
+
+function updateTowers(dt) {
+  for (const t of towers) {
+    if (t.cd > 0) t.cd -= dt;
+    const def = TD[t.type];
+    let rate = def.rate * gs.rM;
+    if (gs.turboT  && t.type==='tesla')  rate *= 2;
+    if (gs.sniperF && t.type==='sniper') rate *= 1.5;
+    if (t.cd > 0) continue;
+    const range = def.range * gs.rangeM;
+    let tgt = null, bestWp = -1;
+    for (const e of enemies) {
+      if (!e.dead && !e.reached && dist(t,e) <= range && e.wpi > bestWp) { bestWp = e.wpi; tgt = e; }
+    }
+    if (!tgt) continue;
+    t.aim = Math.atan2(tgt.y - t.y, tgt.x - t.x);
+    t.cd = 1 / rate;
+    fireT(t, tgt, def, range);
+  }
+}
+
+function fireT(tower, tgt, def, range) {
+  const pspd = tower.type === 'missile' ? gs.missileSpd : 250;
+  const splash = (def.splash||0) * gs.splashMult;
+  projs.push({
+    x:tower.x, y:tower.y, tgt,
+    type:tower.type, dmg:def.dmg*gs.dM,
+    ign:def.pierce||gs.pierce,
+    splash, chain:def.chain||0,
+    slow:def.slow||0, slowDur:def.slowDur||0,
+    pspd, color:def.color, hit:false,
+  });
+  playSound(tower.type);
+}
+
+// ══════════════════════════════════════════════
+//  PROJECTILES
+// ══════════════════════════════════════════════
+function updateProjs(dt) {
+  for (const p of projs) {
+    if (p.hit) continue;
+    if (!p.tgt || p.tgt.dead || p.tgt.reached) {
+      if (p.type === 'missile') {
+        let best = null, bw = -1;
+        for (const e of enemies) if (!e.dead&&!e.reached&&dist(p,e)<=TD.missile.range*gs.rangeM&&e.wpi>bw){bw=e.wpi;best=e;}
+        if (best) p.tgt = best; else { p.hit = true; continue; }
+      } else { p.hit = true; continue; }
+    }
+    const dx = p.tgt.x-p.x, dy = p.tgt.y-p.y, d = Math.hypot(dx,dy);
+    const step = p.pspd * dt;
+    if (d <= step+2) { p.hit = true; onHit(p); }
+    else { p.x += dx/d*step; p.y += dy/d*step; }
+  }
+  projs = projs.filter(p => !p.hit);
+}
+
+function onHit(p) {
+  const hx = p.tgt ? p.tgt.x : p.x, hy = p.tgt ? p.tgt.y : p.y;
+  playSound('hit');
+  if (p.splash > 0) {
+    spark(hx, hy, 'splash', p.splash);
+    for (const e of enemies) if (!e.dead&&!e.reached&&dist({x:hx,y:hy},e)<=p.splash) hurtE(e,p.dmg,p.ign);
+  } else {
+    if (p.tgt && !p.tgt.dead) hurtE(p.tgt, p.dmg, p.ign);
+  }
+  if (p.chain > 0) {
+    const cnt = p.chain + gs.chainExtra;
+    const chained = enemies.filter(e=>!e.dead&&!e.reached&&e!==p.tgt&&dist({x:hx,y:hy},e)<=TD.tesla.range*gs.rangeM).slice(0,cnt);
+    for (const ce of chained) { hurtE(ce, p.dmg*.6, p.ign); spark(hx,hy,'chain',0,ce.x,ce.y); }
+  }
+  if (p.slow > 0 && p.tgt && !p.tgt.dead) slowE(p.tgt, gs.cryoFactor, gs.cryoDur);
+  spark(hx, hy, 'hit', 0, 0, 0, p.color);
+}
+
+// ══════════════════════════════════════════════
+//  PARTICLES
+// ══════════════════════════════════════════════
+function spark(x, y, type, r=0, x2=0, y2=0, col='') {
+  parts.push({x,y,type,r,x2,y2,col,t:0,life:type==='chain'?.15:type==='splash'?.3:.35});
+}
+function updateParts(dt) { for (const p of parts) p.t += dt; parts = parts.filter(p=>p.t<p.life); }
+
+// ══════════════════════════════════════════════
+//  WAVE SYSTEM — matches WaveData.swift exactly
+// ══════════════════════════════════════════════
+function genWave(n) {
+  const tier = Math.floor((n-1)/10);
+  const hpSc = 1+n*.12, spdSc = 1+n*.04;
+  const boss = n%10===0, goldB = 50+n*5+(boss?150:0);
+
+  // Progressive pool — same thresholds as WaveData.swift
+  const pool = ['grunt'];
+  if (n >= 11) pool.push('armored');    // armoured — high HP, resistant
+  if (n >= 18) pool.push('berserker');  // berserker — speeds up at 50% HP
+  if (n >= 21) pool.push('swift');      // swift — very fast
+  if (n >= 25) pool.push('phantom');    // phantom — 25% dodge
+  if (n >= 30) pool.push('shielded');   // shielded — ablative shield first
+  if (n >= 31) pool.push('healer');     // healer — regenerates HP
+  if (n >= 35) pool.push('swarm');      // swarm — tiny, fast, splits x3
+  if (n >= 41) pool.push('splitter');   // splitter — splits into 2 grunts
+  if (n >= 45) pool.push('voidling');   // voidling — high regen, slow immune
+  if (n >= 55) pool.push('vampire');    // vampire — drains 2 lives on escape
+  if (n >= 65) pool.push('wraith');     // wraith — fastest, slow immune, dodge
+
+  const count = 5+n*2;
+  const ivl = Math.max(.32, 1.5 - tier*.12);
+  const spawns = [];
+  for (let i = 0; i < count; i++) spawns.push({type:pool[i%pool.length], hpSc, spdSc, delay:i*ivl});
+
+  const bossDelay = count*ivl + 1;
+  // Titan appears every boss wave (every 10 waves)
+  if (boss) spawns.push({type:'titan', hpSc:hpSc*1.5, spdSc:spdSc*.8, delay:bossDelay});
+  // Colossus joins boss waves from wave 50 onward
+  if (boss && n >= 50) spawns.push({type:'colossus', hpSc:hpSc*1.2, spdSc:spdSc*.7, delay:bossDelay+3});
+
+  return {n, spawns, goldB, boss};
+}
+
+function startWave() {
+  if (gs.waveOn || gs.phase !== 'playing') return;
+  gs.wave++; gs.waveOn = true;
+  if (gs.interestR > 0) { const i = Math.floor(gs.gold*gs.interestR); gs.gold += i; gs.score += i; }
+  gs.shieldLeft = gs.shieldMax;
+  updateHUD(); updateWaveBtn();
+  const cfg = genWave(gs.wave);
+  gs.gold += cfg.goldB; updateHUD();
+  const total = cfg.spawns.length;
+  pending = total;
+  spawnTimers.forEach(clearTimeout); spawnTimers = [];
+  for (const sp of cfg.spawns) {
+    spawnTimers.push(setTimeout(() => {
+      if (gs.phase !== 'playing') return;
+      enemies.push(mkEnemy(sp.type, sp.hpSc, sp.spdSc));
+    }, sp.delay*1000));
+  }
+}
+
+function resolvePending() {
+  pending--;
+  if (pending <= 0 && enemies.filter(e=>!e.dead&&!e.reached).length === 0) waveEnd();
+}
+
+function waveEnd() {
+  if (!gs.waveOn) return;
+  gs.waveOn = false;
+  spawnTimers.forEach(clearTimeout); spawnTimers = [];
+  if (gs.wave >= 100) { gameOver(true); return; }
+  openShop();
+}
+
+function handleWaveBtn() {
+  if (!gs.waveOn && gs.phase === 'playing') startWave();
+}
+
+// ══════════════════════════════════════════════
+//  SHOP
+// ══════════════════════════════════════════════
+function openShop() {
+  shopCat = 'Damage'; renderShop();
+  document.getElementById('shop-overlay').classList.remove('hidden');
+}
+function closeShop() {
+  document.getElementById('shop-overlay').classList.add('hidden');
+  updateWaveBtn();
+}
+function setShopCat(c) { shopCat = c; renderShop(); }
+
+function renderShop() {
+  document.getElementById('shop-gold').textContent = '● '+gs.gold+'g';
+  document.getElementById('shop-cats').innerHTML =
+    UCATS.map(c=>`<button class="cat-btn${c===shopCat?' on':''}" onclick="setShopCat('${c}')">${c}</button>`).join('');
+  const items = UPGRADES.filter(u => u.cat === shopCat);
+  document.getElementById('shop-items').innerHTML = items.map(u => {
+    const owned = gs.owned.has(u.id);
+    const reqOk = !u.req || gs.owned.has(u.req);
+    const canB  = !owned && reqOk && gs.gold >= u.cost;
+    const locked= !owned && !reqOk;
+    const reqName = u.req ? UPGRADES.find(x=>x.id===u.req)?.name : '';
+    return `<div class="uc${owned?' owned':''}${locked?' locked':''}">
+      <div class="uc-top"><span class="uc-ico">${u.ico}</span><span class="uc-name">${u.name}</span></div>
+      <div class="uc-desc">${u.desc}${locked?`<br><small style="color:var(--danger)">Needs: ${reqName}</small>`:''}</div>
+      <button class="uc-buy${owned?' ok':''}"${owned||!canB?' disabled':''}
+        onclick="buyUpg('${u.id}')">${owned?'✓ Owned':'● '+u.cost+'g'}</button>
+    </div>`;
+  }).join('');
+}
+
+function buyUpg(id) {
+  const u = UPGRADES.find(x=>x.id===id);
+  if (!u || gs.owned.has(id)) return;
+  if (u.req && !gs.owned.has(u.req)) return;
+  if (gs.gold < u.cost) return;
+  gs.gold -= u.cost; gs.owned.add(id); u.fn(gs);
+  updateHUD(); renderShop();
+}
+
+// ══════════════════════════════════════════════
+//  RENDER
+// ══════════════════════════════════════════════
+function render() {
+  ctx.clearRect(0,0,CW,CH);
+  ctx.fillStyle = C.bg; ctx.fillRect(0,0,CW,CH);
+
+  // Subtle grid
+  ctx.strokeStyle = 'rgba(26,122,255,.055)'; ctx.lineWidth = .5;
+  for (let c=0;c<=COLS;c++){ctx.beginPath();ctx.moveTo(c*CELL,0);ctx.lineTo(c*CELL,CH);ctx.stroke();}
+  for (let r=0;r<=ROWS;r++){ctx.beginPath();ctx.moveTo(0,r*CELL);ctx.lineTo(CW,r*CELL);ctx.stroke();}
+
+  // Road
+  ctx.save();
+  ctx.strokeStyle=C.path; ctx.lineWidth=CELL-2; ctx.lineCap='round'; ctx.lineJoin='round';
+  ctx.beginPath(); ctx.moveTo(WP[0].x,WP[0].y);
+  for (let i=1;i<WP.length;i++) ctx.lineTo(WP[i].x,WP[i].y);
+  ctx.stroke();
+  ctx.strokeStyle='rgba(30,100,200,.15)'; ctx.lineWidth=CELL+2; ctx.stroke();
+  ctx.strokeStyle='rgba(255,255,255,.05)'; ctx.lineWidth=2; ctx.setLineDash([10,14]); ctx.stroke();
+  ctx.setLineDash([]); ctx.restore();
+
+  // Hover preview
+  if (hoverC && hoverC.col>=0 && hoverC.col<COLS && hoverC.row>=0 && hoverC.row<ROWS) {
+    const def = TD[selT];
+    const placeable = canPlace(hoverC.col, hoverC.row);
+    const cx = hoverC.col*CELL+CELL/2, cy = hoverC.row*CELL+CELL/2;
+    ctx.save();
+    if (placeable) {
+      ctx.strokeStyle=def.color+'99'; ctx.fillStyle=def.color+'18'; ctx.lineWidth=1;
+      ctx.beginPath(); ctx.arc(cx,cy,def.range*gs.rangeM,0,Math.PI*2); ctx.fill(); ctx.stroke();
+      ctx.strokeStyle=def.color; ctx.lineWidth=2; ctx.fillStyle=def.color+'28';
+    } else {
+      ctx.strokeStyle='rgba(220,50,50,0.9)'; ctx.lineWidth=2; ctx.fillStyle='rgba(200,40,40,0.18)';
+    }
+    ctx.fillRect(hoverC.col*CELL+2, hoverC.row*CELL+2, CELL-4, CELL-4);
+    ctx.strokeRect(hoverC.col*CELL+2, hoverC.row*CELL+2, CELL-4, CELL-4);
+    ctx.restore();
+  }
+
+  for (const t of towers) drawTower(t);
+  for (const e of enemies) if (!e.dead && !e.reached) drawEnemy(e);
+  for (const p of projs) drawProj(p);
+  drawParts();
+}
+
+function drawTower(t) {
+  const def = TD[t.type];
+  ctx.save(); ctx.translate(t.x, t.y);
+  ctx.beginPath(); ctx.arc(0,0,16,0,Math.PI*2);
+  ctx.fillStyle=def.color; ctx.fill();
+  ctx.strokeStyle='rgba(255,255,255,.3)'; ctx.lineWidth=1.5; ctx.stroke();
+  ctx.rotate(t.aim - Math.PI/2);
+  ctx.fillStyle='rgba(255,255,255,.85)';
+  rrect(ctx,-3,-4,6,18,2); ctx.fill();
+  ctx.restore();
+}
+
+function drawEnemy(e) {
+  const def = ED[e.type], r = def.sz;
+  ctx.save(); ctx.translate(e.x, e.y);
+
+  // Phantom and wraith are semi-transparent
+  if (e.type === 'phantom') ctx.globalAlpha = 0.55;
+  if (e.type === 'wraith')  ctx.globalAlpha = 0.65;
+
+  // Shadow
+  ctx.globalAlpha *= 1; // keep current
+  ctx.beginPath(); ctx.ellipse(0, r*.9, r*.65, .22*r, 0, 0, Math.PI*2);
+  ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fill();
+
+  // Body color: slowed = teal tint
+  const baseCol = def.color;
+  const bodyCol = e.slowed ? C.teal : baseCol;
+
+  if (def.boss) {
+    // Bosses drawn as rounded squares
+    ctx.fillStyle = bodyCol;
+    rrect(ctx, -r, -r, r*2, r*2, e.type==='titan' ? 6 : 5); ctx.fill();
+    const bossStroke = e.type==='titan'   ? 'rgba(255,60,60,.9)'
+                     : e.type==='colossus'? 'rgba(215,150,25,.9)'
+                     : 'rgba(255,255,255,.4)';
+    ctx.strokeStyle = bossStroke; ctx.lineWidth = e.type==='colossus'?3:2.5; ctx.stroke();
+  } else {
+    ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI*2);
+    ctx.fillStyle = bodyCol; ctx.fill();
+
+    // Type-specific outlines
+    switch (e.type) {
+      case 'phantom':
+        ctx.strokeStyle='rgba(180,230,255,.7)'; ctx.lineWidth=1.5; ctx.stroke(); break;
+      case 'shielded':
+        ctx.strokeStyle='rgba(140,170,230,.9)'; ctx.lineWidth=2; ctx.stroke(); break;
+      case 'wraith':
+        ctx.strokeStyle='rgba(255,255,255,.6)'; ctx.lineWidth=1.5; ctx.stroke(); break;
+      case 'voidling':
+        ctx.strokeStyle='rgba(150,25,255,.8)'; ctx.lineWidth=2; ctx.stroke(); break;
+      case 'vampire':
+        ctx.strokeStyle='rgba(255,12,25,.85)'; ctx.lineWidth=2; ctx.stroke(); break;
+      case 'berserker':
+        ctx.strokeStyle = e.hasBerserked ? 'rgba(255,110,0,.95)' : 'rgba(255,140,0,.75)';
+        ctx.lineWidth = e.hasBerserked ? 2.5 : 1.5; ctx.stroke(); break;
+      case 'splitter':
+        ctx.strokeStyle='rgba(255,140,25,.7)'; ctx.lineWidth=1.5; ctx.stroke(); break;
+      case 'healer':
+        ctx.strokeStyle=C.green; ctx.lineWidth=2; ctx.stroke(); break;
+      default: break;
+    }
+  }
+
+  // Shield ring (shielded enemy, only while shield > 0)
+  if (e.shield > 0) {
+    const shieldFrac = e.shield / (def.shieldHp || 200);
+    ctx.beginPath(); ctx.arc(0, 0, r+5, 0, Math.PI*2);
+    ctx.strokeStyle = `rgba(100,160,255,${0.6+shieldFrac*.35})`;
+    ctx.lineWidth = 2.5; ctx.stroke();
+    ctx.beginPath(); ctx.arc(0, 0, r+5, 0, Math.PI*2);
+    ctx.fillStyle = `rgba(80,130,255,${0.08+shieldFrac*.06})`; ctx.fill();
+  }
+
+  // Voidling aura
+  if (e.type === 'voidling') {
+    ctx.beginPath(); ctx.arc(0, 0, r+4, 0, Math.PI*2);
+    ctx.strokeStyle = 'rgba(180,25,255,.5)'; ctx.lineWidth = 1.5; ctx.stroke();
+  }
+
+  // HP bar
+  const bw = r*2.5, bh = 4, bx = -bw/2, by = -r-9;
+  ctx.fillStyle = 'rgba(0,0,0,.6)'; ctx.fillRect(bx, by, bw, bh);
+  const frac = clamp(e.hp / e.mhp, 0, 1);
+  ctx.fillStyle = frac>.5 ? C.green : frac>.25 ? C.amber : C.danger;
+  ctx.fillRect(bx, by, bw*frac, bh);
+
+  // Shield HP bar (separate, blue, above HP bar)
+  if (def.shieldHp && e.shield > 0) {
+    const sf = clamp(e.shield / def.shieldHp, 0, 1);
+    ctx.fillStyle = 'rgba(0,0,0,.5)'; ctx.fillRect(bx, by-6, bw, 3);
+    ctx.fillStyle = '#5599ff'; ctx.fillRect(bx, by-6, bw*sf, 3);
+  }
+
+  ctx.restore();
+}
+
+function drawProj(p) {
+  ctx.save(); ctx.translate(p.x, p.y);
+  const r = p.type === 'missile' ? 5 : 3.5;
+  ctx.beginPath(); ctx.arc(0,0,r,0,Math.PI*2);
+  ctx.fillStyle = p.color; ctx.fill();
+  ctx.restore();
+}
+
+function drawParts() {
+  for (const p of parts) {
+    const a = 1 - p.t/p.life;
+    ctx.save(); ctx.globalAlpha = a;
+    if (p.type === 'hit') {
+      ctx.beginPath(); ctx.arc(p.x,p.y,5+p.t*18,0,Math.PI*2);
+      ctx.strokeStyle=p.col||'#fff'; ctx.lineWidth=1.5; ctx.stroke();
+    } else if (p.type === 'splash') {
+      ctx.beginPath(); ctx.arc(p.x,p.y,p.r*(p.t/p.life),0,Math.PI*2);
+      ctx.strokeStyle=C.amber; ctx.lineWidth=2; ctx.stroke();
+    } else if (p.type === 'chain') {
+      ctx.strokeStyle=C.purple; ctx.lineWidth=2;
+      ctx.beginPath(); ctx.moveTo(p.x,p.y); ctx.lineTo(p.x2,p.y2); ctx.stroke();
+    } else if (p.type === 'nova') {
+      ctx.beginPath(); ctx.arc(p.x,p.y,60*(p.t/p.life),0,Math.PI*2);
+      ctx.strokeStyle=C.purple; ctx.lineWidth=3; ctx.stroke();
+    } else if (p.type === 'crit') {
+      ctx.font='bold 13px sans-serif'; ctx.fillStyle=C.amber;
+      ctx.fillText('CRIT!', p.x-16, p.y-8-p.t*28);
+    } else if (p.type === 'dodge') {
+      ctx.font='bold 12px sans-serif'; ctx.fillStyle='#88ccff';
+      ctx.fillText('MISS', p.x-14, p.y-8-p.t*24);
+    } else if (p.type === 'berserk') {
+      ctx.beginPath(); ctx.arc(p.x,p.y,20*(p.t/p.life),0,Math.PI*2);
+      ctx.strokeStyle='rgba(255,100,0,.9)'; ctx.lineWidth=2.5; ctx.stroke();
+      ctx.font='bold 11px sans-serif'; ctx.fillStyle='#ff6600';
+      ctx.fillText('RAGE!', p.x-16, p.y-14-p.t*20);
+    } else if (p.type === 'die') {
+      for (let i=0;i<5;i++){
+        const ang=i/5*Math.PI*2+p.t*4;
+        const rd=18*(p.t/p.life);
+        ctx.beginPath(); ctx.arc(p.x+Math.cos(ang)*rd, p.y+Math.sin(ang)*rd, 2.5,0,Math.PI*2);
+        ctx.fillStyle='#aaa'; ctx.fill();
+      }
+    } else if (p.type === 'shield') {
+      ctx.beginPath(); ctx.arc(p.x,p.y,20*(1+p.t*3),0,Math.PI*2);
+      ctx.strokeStyle=C.blue; ctx.lineWidth=3; ctx.stroke();
+    }
+    ctx.restore();
+  }
+}
+
+// ══════════════════════════════════════════════
+//  HUD / PALETTE / WAVE BTN
+// ══════════════════════════════════════════════
+function updateHUD() {
+  document.getElementById('hLives').textContent = gs.lives;
+  document.getElementById('hGold').textContent  = gs.gold;
+  document.getElementById('hWave').textContent  = gs.wave+' / 100';
+}
+function updateWaveBtn() {
+  const btn = document.getElementById('waveBtn');
+  if (gs.waveOn) { btn.textContent='Wave '+gs.wave+' in progress…'; btn.disabled=true; }
+  else { btn.textContent=gs.wave===0?'START GAME':'START WAVE '+(gs.wave+1); btn.disabled=false; }
+}
+function renderPal() {
+  document.getElementById('palette').innerHTML = TORDER.map(t => {
+    const d=TD[t], cost=tCost(t), sel=selT===t, can=gs.gold>=cost;
+    return `<button class="tb${sel?' sel':''}${!can?' dim':''}" onclick="selTower('${t}')">
+      <span class="ic">${d.e}</span><span class="nm">${d.name}</span><span class="cs">${cost}g</span>
+    </button>`;
+  }).join('');
+}
+function selTower(t) { selT = t; renderPal(); }
+
+// ══════════════════════════════════════════════
+//  INPUT
+// ══════════════════════════════════════════════
+function canvasCoords(clientX, clientY) {
+  const r = canvas.getBoundingClientRect();
+  return {px:(clientX-r.left)*(CW/r.width), py:(clientY-r.top)*(CH/r.height)};
+}
+canvas.addEventListener('mousemove', e => {
+  const {px,py} = canvasCoords(e.clientX, e.clientY);
+  hoverC = cellOf(px, py);
+});
+canvas.addEventListener('mouseleave', () => hoverC = null);
+canvas.addEventListener('click', e => {
+  const {px,py} = canvasCoords(e.clientX, e.clientY);
+  const {col,row} = cellOf(px, py);
+  placeTower(col, row); renderPal();
+});
+canvas.addEventListener('touchstart', e => {
+  e.preventDefault();
+  const t = e.touches[0];
+  const {px,py} = canvasCoords(t.clientX, t.clientY);
+  hoverC = cellOf(px, py);
+},{passive:false});
+canvas.addEventListener('touchmove', e => {
+  e.preventDefault();
+  const t = e.touches[0];
+  const {px,py} = canvasCoords(t.clientX, t.clientY);
+  hoverC = cellOf(px, py);
+},{passive:false});
+canvas.addEventListener('touchend', e => {
+  e.preventDefault();
+  if (hoverC) { const {col,row} = hoverC; placeTower(col, row); renderPal(); }
+  hoverC = null;
+},{passive:false});
+canvas.addEventListener('touchcancel', () => hoverC = null);
+
+// ══════════════════════════════════════════════
+//  GAME LOOP
+// ══════════════════════════════════════════════
+function loop(ts) {
+  const dt = lastT ? Math.min((ts-lastT)/1000, .1) : .016;
+  lastT = ts;
+  if (gs.phase === 'playing') {
+    updateEnemies(dt);
+    updateTowers(dt);
+    updateProjs(dt);
+    updateParts(dt);
+    if (gs.waveOn && pending <= 0 && enemies.filter(e=>!e.dead&&!e.reached).length === 0) waveEnd();
+  }
+  render();
+  raf = requestAnimationFrame(loop);
+}
+
+// ══════════════════════════════════════════════
+//  SCREENS
+// ══════════════════════════════════════════════
+function showMenu() {
+  cancelAnimationFrame(raf); spawnTimers.forEach(clearTimeout);
+  document.getElementById('menu-screen').classList.remove('hidden');
+  ['game-screen','go-screen','shop-overlay'].forEach(id=>document.getElementById(id).classList.add('hidden'));
+}
+
+function startGame() {
+  gs=mkGs(); towers=[]; enemies=[]; projs=[]; parts=[];
+  pending=0; selT='cannon'; shopCat='Damage'; lastT=0;
+  spawnTimers.forEach(clearTimeout); spawnTimers=[];
+  cancelAnimationFrame(raf);
+  ['menu-screen','go-screen','shop-overlay'].forEach(id=>document.getElementById(id).classList.add('hidden'));
+  document.getElementById('game-screen').classList.remove('hidden');
+  updateHUD(); renderPal(); updateWaveBtn();
+  raf = requestAnimationFrame(loop);
+}
+
+function gameOver(won=false) {
+  gs.phase = 'gameOver';
+  spawnTimers.forEach(clearTimeout); cancelAnimationFrame(raf);
+  ['game-screen','shop-overlay'].forEach(id=>document.getElementById(id).classList.add('hidden'));
+  const sc = document.getElementById('go-screen');
+  sc.classList.remove('hidden');
+  const h2 = document.getElementById('go-title');
+  h2.textContent = won ? 'VICTORY!' : 'GAME OVER';
+  h2.style.color  = won ? 'var(--green)' : 'var(--danger)';
+  document.getElementById('go-wave').textContent  = gs.wave;
+  document.getElementById('go-score').textContent = gs.score;
+  document.getElementById('go-kills').textContent = gs.kills;
+}
+
+// Boot
+showMenu();
+</script>
+</body>
+</html>
