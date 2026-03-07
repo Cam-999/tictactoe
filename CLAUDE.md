@@ -1,22 +1,23 @@
 # CLAUDE.md
 
-## Overview
+## Projects in this repo
 
-Single-file browser-based Tic Tac Toe game. No build step, no dependencies, no framework.
+### Tic Tac Toe
+- File: `tictactoe.html` — single-file browser game, no build step
+- Open with `open tictactoe.html`
 
-## Running the project
+### Tower Defense (HTML)
+- File: `New app html/TowerDefense.html` — single-file browser game, no build step
+- Open directly in any browser
+- 14 enemy types, 39 tiered upgrades, Web Audio sound effects, 100 waves
 
-```
-open tictactoe.html
-```
+### App Icon
+- File: `AppIcon.html` — SVG tower defense icon, open in browser to view/export
 
-Or open `tictactoe.html` directly in any browser.
+## iOS Xcode App (separate location)
+- Path: `/Users/cameron999/Documents/TestAPPXCODE/TowerDefense/`
+- SpriteKit + SwiftUI, same game logic as HTML version
+- Full architecture in Claude memory: `tower-defense.md`
 
-## Architecture
-
-`tictactoe.html` is entirely self-contained (HTML + CSS + JS in one file).
-
-Key patterns:
-- **Board state**: 9-element array representing the 3×3 grid
-- **Win detection**: `WINS` array of 8 winning index combinations (3 rows, 3 columns, 2 diagonals)
-- **Score tracking**: `{X, O, D}` object tracking wins for X, O, and draws
+## GitHub
+- Remote: https://github.com/Cam-999/tictactoe (branch: main)
